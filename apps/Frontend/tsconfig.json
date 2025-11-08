@@ -1,0 +1,13 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@repo/ui": ["../../packages/ui/src"],
+      "@repo/ui/*": ["../../packages/ui/src/*"],
+      // "heroui-native": ["../../node_modules/heroui-native/src"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "uniwind-types.d.ts", ".rnstorybook/stories/OtpInput.stories.tsx", ".rnstorybook/stories/OtpInput.stories.tsx"]
+}

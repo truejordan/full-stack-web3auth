@@ -24,6 +24,18 @@ This Turborepo includes the following packages/apps:
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
+To install app specific dependencies at root use:
+```bash
+npm install [package] --workspace=apps/app_directory
+```
+cd into `apps/app_directory` then run: 
+```bash 
+npm i 
+```
+or 
+
+Install package at directory level then sync turbo repo workspace package at root with `npm i`
+
 ### Utilities
 
 This Turborepo has some additional tools already setup for you:
@@ -133,3 +145,31 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+## 🛠️ Available Scripts
+
+### Root Level Commands
+
+```bash
+# Development
+npm run dev          # Start all services in development mode
+npm run build        # Build all services for production
+npm run start        # Start all services in production mode
+
+# Code Quality
+npm run lint         # Lint all workspaces
+npm run test         # Run tests across all workspaces
+npm run type-check   # TypeScript type checking
+
+# Maintenance
+npm run clean        # Clean build artifacts
+```
+
+### Individual Service Commands
+For individual service use `--filter=apps/app_directory` flag
+
+Example:
+```bash
+# Backend only
+npx turbo run dev --filter=apps/Backend
+```
