@@ -3,7 +3,7 @@ import type { IBaseProvider } from "@web3auth/no-modal";
 
 const web3auth = web3authProvider;
 
-const authConnectionId = "3xl-sub-auth";
+const authConnectionId = "supabase-auth-w3";
 
 export const connectToWeb3Auth = async (idToken: string) => {
   const session = await web3auth.connect({

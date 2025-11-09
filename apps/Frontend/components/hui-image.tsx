@@ -1,21 +1,22 @@
 import { View } from "react-native";
 import React from "react";
-import { Image } from "expo-image";
+import { Image, ImageContentFit } from "expo-image";
 
 const HuiImage = ({
   source,
   className = "",
-  resizeMode = "contain",
+  contentFit = "contain",
 }: {
   source: string;
   className: string;
-  resizeMode: "contain" | "cover" | "stretch" | "repeat" | "center";
+  contentFit: ImageContentFit;
 }) => {
   return (
     <View className={className}>
       <Image
         source={{ uri: source }}
-        style={{ width: "100%", height: "100%", resizeMode: resizeMode }}
+        style={{ width: "100%", height: "100%",  }}
+        contentFit={contentFit}
       />
     </View>
   );

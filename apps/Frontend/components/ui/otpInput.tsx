@@ -89,7 +89,7 @@ const OtpInput = ({
             onKeyPress={(e) => handleOnKeyPress(e, index)}
             keyboardType="default"
             textAlign="center"
-            className="text-center text-2xl font-bold h-12 border-2"
+            className="text-center text-2xl font-bold h-12 border-2 rounded-xl"
             autoCapitalize="none"
             autoCorrect={false}
             colors={{

@@ -1,7 +1,37 @@
-@import 'tailwindcss';
-@import 'uniwind';
+@import "tailwindcss";
+@import "uniwind";
 
-@import 'heroui-native/styles';
+@import "heroui-native/styles";
 /* Path to the heroui-native lib inside node_modules from the root of your project */
 @source '../../node_modules/heroui-native/lib';
 @source '../components/';
+
+@layer theme {
+  @variant light {
+    --color-accent: #0a7ea4;
+    --color-accent-foreground: #ffffff;
+    --color-default: #e4e4e7;
+    --color-default-foreground: #18181b;
+    --color-danger: #ef4444;
+    --color-danger-foreground: #ffffff;
+    --color-foreground: #ecedee;
+    --color-background: #151718;
+    --color-muted-foreground: #9ba1a6;
+    --color-border: #3f3f46;
+  }
+
+  :root {
+    @variant dark {
+      --color-accent: #0a7ea4;
+      --color-accent-foreground: #ffffff;
+      --color-default: #3f3f46;
+      --color-default-foreground: #ecedee;
+      --color-danger: #ef4444;
+      --color-danger-foreground: #ffffff;
+      --color-foreground: #ecedee;
+      --color-background: #151718;
+      --color-muted-foreground: #9ba1a6;
+      --color-border: #52525b;
+    }
+  }
+}
