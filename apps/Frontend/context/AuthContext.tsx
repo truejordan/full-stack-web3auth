@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (session && !address) {
       SecureStore.getItemAsync(ADDRESS_STORAGE_KEY)
         .then((storedAddress) => {
-          if (storedAddress && storedAddress.trim() !== "" && !address) {
+          if (storedAddress && storedAddress.trim() !== "") {
             setAddress(storedAddress);
             setLoggedIn(true);
           }
@@ -123,13 +123,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         options: { shouldCreateUser: true },
       });
 
-      if (!error) {
-        setEmail(email);
-        if (!requestOTP) {
-          router.push("/otp");
-        }
-      }
       if (error) throw error;
+      setEmail(email);
+      if (!requestOTP) {
+        router.push("/otp");
+      }
     } catch (error) {
       console.error("Error signing in with OTP:", error);
       Alert.alert("Error", "Failed to send OTP. Please try again.");
@@ -236,6 +234,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const getBalance = async () => {
     if (!session?.access_token) {
       Alert.alert("Error", "Please login to get balance");
+      return;
+    }
+    if (!address) {
+      Alert.alert("Error", "Wallet address not found. Please connect Web3Auth first.");
       return;
     }
     try {
