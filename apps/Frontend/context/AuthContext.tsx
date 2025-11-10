@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { Session } from "@supabase/supabase-js";
+import * as SecureStore from "expo-secure-store";
 
 interface AuthContextType {
   user: string | undefined;
@@ -23,6 +24,8 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
+const ADDRESS_STORAGE_KEY = "WALLET_ADDRESS";
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [user, setUser] = useState<string | undefined>(undefined);
@@ -42,10 +45,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
+  // restore address from secure store if not already set
+  useEffect(() => {
+    if (session && !address) {
+      SecureStore.getItemAsync(ADDRESS_STORAGE_KEY)
+        .then((storedAddress) => {
+          if (storedAddress && storedAddress.trim() !== "" && !address) {
+            setAddress(storedAddress);
+            setLoggedIn(true);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [session, address]);
+
+  //* helpers functions *//
   const isValidEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+
+ 
+  /** 
+   * @function getFreshTokenForWeb3Auth
+   * @description use for web3auth api calls that require an id token post login
+   * @returns the fresh token if older than 5 minutes, null if error or same token if fresh
+   */
+  const getFreshTokenForWeb3Auth = async (): Promise<string | null> => {
+    // Use the session state we already have
+    if (!session?.access_token) {
+      return null;
+    }
+
+    // Check token age (Web3Auth requires < 6 minutes)
+    const expiresAt = session.expires_at
+      ? session.expires_at * 1000
+      : Date.now();
+    const tokenLifetime = 3600 * 1000; // 1 hour in milliseconds
+    const issuedAt = expiresAt - tokenLifetime;
+    const now = Date.now();
+    const age = now - issuedAt;
+    const maxAge = 5 * 60 * 1000; // 5 minutes (1 min buffer before 6 min limit)
+
+    // Only refresh if token is older than 5 minutes
+    if (age > maxAge) {
+      console.log("Token too old, refreshing...");
+      const {
+        data: { session: refreshedSession },
+        error,
+      } = await supabase.auth.refreshSession();
+
+      if (error || !refreshedSession) {
+        console.error("Error refreshing session:", error);
+        return null;
+      }
+
+      // Update session state with refreshed session
+      setSession(refreshedSession);
+
+      return refreshedSession.access_token;
+    }
+
+    // Token is fresh enough, use it
+    return session.access_token;
+  };
+
+  //* Authentication functions *//
 
   const signInWithOtp = async (email: string, requestOTP: boolean = false) => {
     if (!email || !isValidEmail(email)) {
@@ -104,18 +169,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error logging out:", error);
-      Alert.alert("Error", "Failed to logout. Please try again.");
-    } finally {
+      if (error) {
+        console.error("Error logging out:", error);
+        Alert.alert("Error", "Failed to logout. Please try again.");
+        return;
+      }
+      await SecureStore.deleteItemAsync(ADDRESS_STORAGE_KEY);
       setLoggedIn(false);
       setUser(undefined);
       setEmail(null);
       setSession(null);
+      setAddress(undefined);
+      setBalance(undefined);
+    } catch (error) {
+      console.error("Error logging out:", error);
+      Alert.alert("Error", "Failed to logout. Please try again.");
     }
   };
 
+  // connect to web3auth login connector
   const connectWeb3Auth = async (idToken: string) => {
     try {
       const response = await fetch(
@@ -144,6 +216,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await response.json();
       if (data.address) {
         setAddress(data.address);
+        // Only persist if address is valid
+        await SecureStore.setItemAsync(ADDRESS_STORAGE_KEY, data.address);
         setLoggedIn(true);
         console.log("web3auth connected", data);
       } else {
