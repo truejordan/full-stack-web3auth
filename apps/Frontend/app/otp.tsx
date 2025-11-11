@@ -7,20 +7,19 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useState } from "react";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/context/AuthContext";
 import OtpInput from "@/components/ui/otpInput";
 import { Button } from "heroui-native";
+import { useAuth } from "@/hooks/auth";
 
 const Otp = () => {
-  const { verifyOtp, email, signInWithOtp } = useAuth();
+  const { verifyOtp, signInWithOtp, loginEmail } = useAuth();
   const [otpCode, setOtpCode] = useState("");
   const [countdown, setCountdown] = useState(0);
 
   const handleResendCode = async () => {
     // setIsResending(true);
-    if (!email) return;
-    await signInWithOtp(email, true);
+    if (!loginEmail) return;
+    await signInWithOtp(loginEmail, true);
     setCountdown(3);
     const interval = setInterval(() => {
       setCountdown((prev) => {
@@ -41,7 +40,7 @@ const Otp = () => {
             We sent you an email
           </Text>
           <Text className="text-sm text-muted-foreground">
-            Enter the code sent to {email}
+            Enter the code sent to {loginEmail}
           </Text>
         </View>
         <View className="flex flex-col gap-4">

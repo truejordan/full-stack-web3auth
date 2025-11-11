@@ -2,8 +2,6 @@
 import React from "react";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Text } from "react-native-gesture-handler";
-// import { useTheme } from "heroui-native";
-import { useThemeColor } from 'heroui-native';
 import { useResolveClassNames, withUniwind } from 'uniwind';
 import {
   Tabs,
@@ -13,12 +11,7 @@ import {
   TabTriggerSlotProps,
 } from "expo-router/ui";
 import { Pressable } from "react-native";
-// import { HuiText } from "@/components/hui-text";
 import { BlurView } from "expo-blur";
-import { hslToHex } from "@/utils/HlstoHex";
-
-
-
 
 export default function TabLayout() {
   const activeStyles = useResolveClassNames('text-red-500');

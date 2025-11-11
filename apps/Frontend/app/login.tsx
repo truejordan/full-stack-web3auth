@@ -9,10 +9,11 @@ import { Divider } from "heroui-native";
 import { HuiText } from "@/components/hui-text";
 import HuiExternalLink from "@/components/hui-external-link";
 // import HuiExternalLink from '@/components/hui-external-link'
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/auth";
 
 const Login = () => {
-  const { signInWithOtp, email, setEmail } = useAuth();
+  const { signInWithOtp, loginEmail, setLoginEmail } = useAuth();
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View className="flex-1 items-center pt-14 pb-8 bg-background">
@@ -27,13 +28,13 @@ const Login = () => {
             <TextField.Input
               className=" h-[48px] px-4 rounded-xl"
               placeholder="Enter your email"
-              onChangeText={setEmail}
+              onChangeText={setLoginEmail}
             />
             <TextField.InputEndContent>
               <Button
                 variant="primary"
                 className="w-72 bg-warning"
-                onPress={() => email && signInWithOtp(email)}
+                onPress={() => loginEmail && signInWithOtp(loginEmail)}
               >
                 <Button.Label>Login</Button.Label>
               </Button>
