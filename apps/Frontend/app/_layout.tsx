@@ -27,10 +27,23 @@ const queryClient = new QueryClient();
 Uniwind.setTheme("dark");
 // console.log(Uniwind.currentTheme);
 
+// function AppContent() {
+//   const { theme } = useUniwind();
+//   // Initialize auth listeners
+//   useAuthInit();
+//   return (
+
+//       <HeroUINativeProvider>
+//         <RootStack />
+//         <StatusBar style={theme === "dark" ? "light" : "dark"} />
+//       </HeroUINativeProvider>
+//   );
+// }
+
 export default function RootLayout() {
   const { theme } = useUniwind();
   // Initialize auth listeners
-  useAuthInit();
+  // useAuthInit();
   return (
     <QueryClientProvider client={queryClient}>
       <HeroUINativeProvider>

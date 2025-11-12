@@ -1,12 +1,14 @@
 import React, {useState, useEffect} from "react";
 import { Stack } from "expo-router";
-import { useAuth } from "@/hooks/auth";
+import { useAuth, useAuthInit } from "@/hooks/auth";
 
 const RootStack = () => {
-  const { loggedIn, session } = useAuth();
+  useAuthInit();
+
+  const { loggedIn, session, isInitialized } = useAuth();
   const [showStorybook, setShowStorybook] = useState(false);
 
-  // console.log("my session info",session?.access_token) 
+  console.log("my session info",session?.access_token) 
   // console.log("my loggedIn",loggedIn)
 
   // delay storybook render to prevent bypassing initial route
@@ -17,7 +19,7 @@ const RootStack = () => {
     return () => {
       setShowStorybook(false);
     }
-  })
+  }, [])
 
   return (
     <Stack initialRouteName={loggedIn ? "(tabs)" : "login"}>
@@ -33,7 +35,7 @@ const RootStack = () => {
         />
       </Stack.Protected>
 
-      <Stack.Protected guard={__DEV__ && showStorybook}>
+      <Stack.Protected guard={__DEV__ && showStorybook && isInitialized}>
         <Stack.Screen name="storybook" options={{ headerShown: true }} />
       </Stack.Protected>
       <Stack.Protected guard={loggedIn}>

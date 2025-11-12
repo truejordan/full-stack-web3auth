@@ -7,12 +7,14 @@ interface AuthState {
   loginEmail: string | null;
   session: Session | null;
   authLoading: boolean;
+  isInitialized: boolean;
 
   // Actions
   setUser: (user: string | undefined) => void;
   setLoginEmail: (loginEmail: string | null) => void;
   setSession: (session: Session | null) => void;
   setAuthLoading: (loading: boolean) => void;
+  setIsInitialized: (initialized: boolean) => void;
 
   // Reset all state
   reset: () => void;
@@ -23,6 +25,7 @@ const initialState = {
   loginEmail: null,
   session: null,
   authLoading: false,
+  isInitialized: false,
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -32,6 +35,7 @@ export const useAuthStore = create<AuthState>()(
       setLoginEmail: (loginEmail) => set({ loginEmail }),
       setSession: (session) => set({ session }),
       setAuthLoading: (loading) => set({ authLoading: loading }),
+      setIsInitialized: (initialized) => set({ isInitialized: initialized }),
       reset: () => set((state) => ({ ...initialState, session: state.session })),
     }),
   

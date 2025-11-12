@@ -8,12 +8,11 @@ import { Button } from "heroui-native";
 import { Divider } from "heroui-native";
 import { HuiText } from "@/components/hui-text";
 import HuiExternalLink from "@/components/hui-external-link";
-// import HuiExternalLink from '@/components/hui-external-link'
-// import { useAuth } from "@/context/AuthContext";
 import { useAuth } from "@/hooks/auth";
 
 const Login = () => {
-  const { signInWithOtp, loginEmail, setLoginEmail } = useAuth();
+  const { signInWithOtp, loginEmail, setLoginEmail, socialLogin } = useAuth();
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View className="flex-1 items-center pt-14 pb-8 bg-background">
@@ -59,8 +58,7 @@ const Login = () => {
           <View className="flex flex-row gap-4">
             <Button
               className="w-20"
-              // onPress={() => login(LOGIN_PROVIDER.JWT, "google-oauth2")}
-              //   onPress={() => socialAuthorize("google-oauth2")}/
+              onPress={() => socialLogin("google")}
             >
               <FontAwesome6 name="google" size={24} color="black" />
             </Button>
