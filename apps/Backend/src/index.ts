@@ -4,6 +4,7 @@ import cors from "cors";
 import routes from "./routes";
 import { requestLogger } from "./middleware/logger";
 import { initWeb3Auth } from "./config/web3Auth";
+import jwks from './routes/jwks'
 
 const app = express();
 const PORT = process.env["PORT"] || 4000;
@@ -32,13 +33,14 @@ app.get("/health", (req, res) => {
 
 // API Routes
 app.use("/api", routes);
-
+app.use("/.well-known", jwks);
 // Start server
 app.listen(PORT, async () => {
   console.log(`🚀 Backend server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔗 Test database: http://localhost:${PORT}/api/test/test-db`);
   console.log(`🔗 Web3Auth: http://localhost:${PORT}/api/web3auth/test`);
+  console.log(`🔗 JWKS: http://localhost:${PORT}/.well-known/jwks.json`);
   // Initialize Web3Auth
   try {
     await initWeb3Auth();
