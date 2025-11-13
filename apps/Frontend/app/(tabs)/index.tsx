@@ -18,13 +18,13 @@ import { useConnectWeb3Auth } from "@/hooks/queries/useWeb3Auth";
 export default function HomeScreen() {
   const { theme } = useUniwind();
   const [otp, setOtp] = useState("");
-  const { logout, getFreshTokenForWeb3Auth } = useAuth();
+  const { logout, getFreshTokenForWeb3Auth, session } = useAuth();
   const connectWeb3Auth = useConnectWeb3Auth();
 
   const connectw3atest = async () => {
-    const freshToken = await getFreshTokenForWeb3Auth();
-    if (freshToken) {
-      connectWeb3Auth.mutateAsync(freshToken);
+    // const freshToken = await getFreshTokenForWeb3Auth(); // may not need, a general refresh function maybe better
+    if (session?.access_token) {
+      connectWeb3Auth.mutateAsync(session.access_token);
     }
   };
 
