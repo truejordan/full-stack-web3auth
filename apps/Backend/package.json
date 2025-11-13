@@ -10,7 +10,8 @@
     "lint": "eslint src/**/*.ts",
     "test": "echo \"No tests specified\"",
     "clean": "rm -rf dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate-keys": "tsx src/scripts/generateKeys.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,11 +19,13 @@
   "dependencies": {
     "@mysten/sui": "^1.44.0",
     "@neondatabase/serverless": "^1.0.2",
+    "@supabase/supabase-js": "^2.81.1",
     "@web3auth/node-sdk": "^5.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "express-oauth2-jwt-bearer": "^1.7.1"
+    "express-oauth2-jwt-bearer": "^1.7.1",
+    "jose": "^6.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

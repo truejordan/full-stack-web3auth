@@ -1,8 +1,8 @@
 import express from "express";
 import {
   connectToWeb3Auth,
-  getPrivateKey,
   getKeyPair,
+  getPrivateKey,
 } from "../Services/w3aServices";
 import {
   getSuiKeyPair,
@@ -10,6 +10,9 @@ import {
   suiRPC,
   sendTransaction,
 } from "../Services/mysten";
+import { checkJwt } from "../middleware/jwt";
+import { getWeb3AuthWallet } from "../Services/w3aServices";
+import { mintW3Jwt } from "../Services/tokenService";
 
 const router = express.Router();
 
@@ -17,23 +20,26 @@ router.get("/test", async (req, res) => {
   res.json({ success: true, message: "web3auth route active" });
 });
 
-router.post("/connect", async (req, res): Promise<void> => {
-  const { idToken } = req.body;
-
-  // Validate input
-  if (!idToken) {
-    res.status(400).json({ error: "idToken is required" });
-    return;
-  }
+router.post("/connect", checkJwt, async (req, res): Promise<void> => {
+  console.log("🔐 Auth check result:", {
+    verified: !!req.auth,
+    userId: req.auth?.payload?.sub,
+    email: req.auth?.payload?.["email"],
+  });
 
   try {
-    const provider = await connectToWeb3Auth(idToken);
-    const keyPair = await getKeyPair(provider, getSuiKeyPair);
-    const address = keyPair.toSuiAddress();
+    const w3Token = await mintW3Jwt(req);
+    console.log("🔐 W3 Token minted:", w3Token);
+
+    if (!w3Token) {
+      res.status(400).json({ error: "Failed to mint W3 JWT" });
+      return;
+    }
+    const { address, privateKey } = await getWeb3AuthWallet(w3Token, true);
     res.json({
       success: true,
-      message: "Connected to Web3Auth successfully",
       address: address,
+      pkStatus: privateKey ? "success" : "failed",
     });
   } catch (error) {
     console.error("Error connecting to Web3Auth:", error);
@@ -83,10 +89,10 @@ router.post("/transfer", async (req, res): Promise<void> => {
     return;
   }
   try {
-  const provider = await connectToWeb3Auth(idToken);
-  const keyPair = await getKeyPair(provider, getSuiKeyPair);
-  const transaction = await sendTransaction(recipient, amount, keyPair );
-  res.json({success: true, transaction: transaction});
+    const provider = await connectToWeb3Auth(idToken);
+    const keyPair = await getKeyPair(provider, getSuiKeyPair);
+    const transaction = await sendTransaction(recipient, amount, keyPair);
+    res.json({ success: true, transaction: transaction });
   } catch (error) {
     console.error("Error sending transaction:", error);
     res.status(500).json({

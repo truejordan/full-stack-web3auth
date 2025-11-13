@@ -1,6 +1,6 @@
 import { Web3Auth, } from "@web3auth/node-sdk";
 import { SuiConfigType } from "./suiConfig";
-import { CHAIN_NAMESPACES, IBaseProvider, WEB3AUTH_NETWORK } from "@web3auth/no-modal";
+import { WEB3AUTH_NETWORK } from "@web3auth/no-modal";
 
 export const web3authProvider = new Web3Auth({
     clientId: process.env['WEB3AUTH_CLIENT_ID'] as string,
