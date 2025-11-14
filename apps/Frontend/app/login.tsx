@@ -9,9 +9,12 @@ import { Divider } from "heroui-native";
 import { HuiText } from "@/components/hui-text";
 import HuiExternalLink from "@/components/hui-external-link";
 import { useAuth } from "@/hooks/auth";
+import { useThemeColor } from "heroui-native";
+import { KeyboardGestureArea } from "react-native-keyboard-controller";
 
 const Login = () => {
   const { signInWithOtp, loginEmail, setLoginEmail, socialLogin } = useAuth();
+  const themeColorAccentForeground = useThemeColor("accent-foreground");
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -32,7 +35,7 @@ const Login = () => {
             <TextField.InputEndContent>
               <Button
                 variant="primary"
-                className="w-72 bg-warning"
+                className="w-72"
                 onPress={() => loginEmail && signInWithOtp(loginEmail)}
               >
                 <Button.Label>Login</Button.Label>
@@ -56,25 +59,22 @@ const Login = () => {
             />
           </View>
           <View className="flex flex-row gap-4">
-            <Button
-              className="w-20"
-              onPress={() => socialLogin("google")}
-            >
-              <FontAwesome6 name="google" size={24} color="black" />
+            <Button className="w-20" onPress={() => socialLogin("google")}>
+              <FontAwesome6 name="google" size={24} color={themeColorAccentForeground} />
             </Button>
             <Button
               className="w-20"
               // onPress={() => login(LOGIN_PROVIDER.JWT, "Twitter")}
               //   onPress={() => socialAuthorize("Twitter")}
             >
-              <FontAwesome6 name="x-twitter" size={24} color="black" />
+              <FontAwesome6 name="x-twitter" size={24} color={themeColorAccentForeground} />
             </Button>
             <Button
               className="w-20"
               // onPress={() => login(LOGIN_PROVIDER.JWT, "Apple")}
               //   onPress={() => socialAuthorize("Apple")}
             >
-              <FontAwesome6 name="apple" size={24} color="black" />
+              <FontAwesome6 name="apple" size={24} color={themeColorAccentForeground} />
             </Button>
           </View>
           <HuiExternalLink

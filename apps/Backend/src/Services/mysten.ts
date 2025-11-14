@@ -3,6 +3,7 @@ import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { SuiClient, getFullnodeUrl, CoinBalance } from "@mysten/sui/client";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { Transaction } from "@mysten/sui/transactions";
+import { getFaucetHost, requestSuiFromFaucetV2 } from "@mysten/sui/faucet";
 
 type SuiNetwork = "mainnet" | "testnet" | "devnet" | "localnet";
 
@@ -46,4 +47,10 @@ export const sendTransaction = async (
     signer: keyPair,
   });
   return { digest: result.digest, amount: amount, recipient: recipient };
+};
+
+export const requestSuiFromFaucet = async (address: string) => {
+  const faucetHost = getFaucetHost('devnet');
+  const result = await requestSuiFromFaucetV2({host:faucetHost, recipient: address});
+  return result;
 };

@@ -46,9 +46,10 @@ const Otp = () => {
         <View className="flex flex-col gap-4">
           <OtpInput initial={otpCode} onChangeOtp={setOtpCode} otpLength={6} />
           <Button
-            className=" bg-red-500 "
+            variant="primary"
             size="md"
             onPress={() => verifyOtp(otpCode)}
+            skipLayoutAnimation
           >
             <Button.Label>Verify</Button.Label>
           </Button>

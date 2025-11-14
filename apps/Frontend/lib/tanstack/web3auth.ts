@@ -18,6 +18,11 @@ interface TransferResponse {
   txHash?: string;
 }
 
+interface FaucetResponse {
+  success: boolean;
+  message: string;
+}
+
 export const web3AuthApi = {
   connect: async (idToken: string): Promise<ConnectResponse> => {
     const response = await fetch(`${API_BASE_URL}/web3auth/connect`, {
@@ -57,5 +62,17 @@ export const web3AuthApi = {
     });
 
     return handleApiResponse<TransferResponse>(response, "Failed to transfer");
+  },
+
+  faucet: async (address: string, idToken: string): Promise<FaucetResponse> => {
+    const response = await fetch(`${API_BASE_URL}/web3auth/faucet`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ address }),
+    });
+    return handleApiResponse<FaucetResponse>(response, "Failed to request faucet");
   },
 };

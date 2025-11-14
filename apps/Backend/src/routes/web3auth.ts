@@ -9,6 +9,7 @@ import {
   getSuiBalance,
   suiRPC,
   sendTransaction,
+  requestSuiFromFaucet,
 } from "../Services/mysten";
 import { checkJwt } from "../middleware/jwt";
 import { getWeb3AuthWallet } from "../Services/w3aServices";
@@ -101,5 +102,19 @@ router.post("/transfer", async (req, res): Promise<void> => {
     });
   }
 });
+
+router.post('/faucet', checkJwt, async (req, res): Promise<void> =>{
+  // request from faucet
+  try{
+  await requestSuiFromFaucet(req.body.address);
+  res.json({ success: true, message: "SUI requested from faucet" });
+  } catch (error) {
+    console.error("Error requesting SUI from faucet:", error);
+    res.status(500).json({
+      error: "Failed to request SUI from faucet",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+})
 
 export default router;

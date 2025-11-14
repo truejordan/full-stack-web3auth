@@ -46,6 +46,10 @@ config.resolver.sourceExts = [...(config.resolver.sourceExts || []), "js", "mjs"
   }
 
 module.exports = withUniwindConfig( configWithStorybook,{
-  cssEntryFile: "./app/global.css",
+  cssEntryFile: "./global.css",
   dtsFile: "./uniwind-types.d.ts",
+  extraThemes: [
+    'alpha-light',
+    'alpha-dark',
+  ]
 });

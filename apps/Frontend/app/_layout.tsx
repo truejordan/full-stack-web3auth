@@ -5,13 +5,13 @@ import RootStack from "@/components/rootStack";
 import "react-native-reanimated";
 import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
-import "./global.css";
+import "../global.css";
 import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from "react-native-reanimated";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAuthInit } from "@/hooks/auth";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 // Disable reanimated warnings
 configureReanimatedLogger({
@@ -24,32 +24,18 @@ export const unstable_settings = {
 };
 
 const queryClient = new QueryClient();
-Uniwind.setTheme("dark");
-// console.log(Uniwind.currentTheme);
-
-// function AppContent() {
-//   const { theme } = useUniwind();
-//   // Initialize auth listeners
-//   useAuthInit();
-//   return (
-
-//       <HeroUINativeProvider>
-//         <RootStack />
-//         <StatusBar style={theme === "dark" ? "light" : "dark"} />
-//       </HeroUINativeProvider>
-//   );
-// }
+Uniwind.setTheme("alpha-dark");
 
 export default function RootLayout() {
   const { theme } = useUniwind();
-  // Initialize auth listeners
-  // useAuthInit();
   return (
-    <QueryClientProvider client={queryClient}>
-      <HeroUINativeProvider>
-        <RootStack />
-        <StatusBar style={theme === "dark" ? "light" : "dark"} />
-      </HeroUINativeProvider>
-    </QueryClientProvider>
+    <KeyboardProvider>
+      <QueryClientProvider client={queryClient}>
+        <HeroUINativeProvider>
+          <RootStack />
+          <StatusBar style={theme === "dark" ? "light" : "dark"} />
+        </HeroUINativeProvider>
+      </QueryClientProvider>
+    </KeyboardProvider>
   );
 }

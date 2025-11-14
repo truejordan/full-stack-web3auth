@@ -74,4 +74,18 @@ export const useTransfer = () => {
   });
 };
 
+export const useFaucet = () => {
+  const queryClient = useQueryClient();
+  const { address } = useWalletStore();
 
+  return useMutation({
+    mutationFn: ({ idToken }: { idToken: string }) => web3AuthApi.faucet(address!, idToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["balance", address] });
+      console.log("Success", "SUI requested from faucet");
+    },
+    onError: (error: Error) => {
+      console.error("Faucet Error", error.message);
+    },
+  });
+};
