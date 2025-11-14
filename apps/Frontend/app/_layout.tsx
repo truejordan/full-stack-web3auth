@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { HeroUINativeProvider } from "heroui-native";
 import { Uniwind, useUniwind } from "uniwind";
@@ -12,6 +13,7 @@ import {
 } from "react-native-reanimated";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { useThemeStore } from "@/store/useThemsStore";
 
 // Disable reanimated warnings
 configureReanimatedLogger({
@@ -24,16 +26,20 @@ export const unstable_settings = {
 };
 
 const queryClient = new QueryClient();
-Uniwind.setTheme("alpha-dark");
 
 export default function RootLayout() {
   const { theme } = useUniwind();
+  const { themeStore } = useThemeStore();
+  useEffect(() => {
+    Uniwind.setTheme(themeStore);
+  }, [themeStore]);
+
   return (
     <KeyboardProvider>
       <QueryClientProvider client={queryClient}>
         <HeroUINativeProvider>
           <RootStack />
-          <StatusBar style={theme === "dark" ? "light" : "dark"} />
+          <StatusBar style={theme.includes("dark") ? "light" : "dark"} />
         </HeroUINativeProvider>
       </QueryClientProvider>
     </KeyboardProvider>
