@@ -14,9 +14,9 @@ import { Pressable } from "react-native";
 import { BlurView } from "expo-blur";
 
 export default function TabLayout() {
-  const activeStyles = useResolveClassNames('text-red-500');
-  const inactiveStyles = useResolveClassNames('text-muted');
-  const activeBackgroundColor = useResolveClassNames('bg-neutral-900/40');
+  const activeStyles = useResolveClassNames('text-foreground');
+  const inactiveStyles = useResolveClassNames('text-muted/40');
+  const activeBackgroundColor = useResolveClassNames('bg-field-background/40');
 
   const TabButton = ({
     icon,
@@ -39,7 +39,7 @@ export default function TabLayout() {
       />
       {children && (
         <Text
-          className={`text-sm ${isFocused ? "text-muted" : "text-background"}`}
+          className={`text-sm ${isFocused ? "text-foreground" : "text-muted/40"}`}
         >
           {children}
         </Text>
@@ -48,11 +48,11 @@ export default function TabLayout() {
   );
 
   return (
-    <Tabs className="flex-1 bg-background">
+    <Tabs className="flex-1 ">
       <TabSlot />
       <TabList
         asChild
-        className="mb-8 px-4 items-center absolute bottom-0 left-0 right-0"
+        className="mb-4 px-4 items-center absolute bottom-0 left-0 right-0"
         style={{
           justifyContent: "space-around",
           shadowColor: "black",
@@ -62,7 +62,7 @@ export default function TabLayout() {
         }}
       >
         <BlurView
-          intensity={100}
+          intensity={30}
           className="mx-8 px-8 p-2 overflow-hidden rounded-full"
           style={{
             backgroundColor: activeBackgroundColor.backgroundColor as string,
