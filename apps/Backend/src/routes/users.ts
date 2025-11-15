@@ -1,17 +1,15 @@
 import express from "express";
-import sql from "../config/database";
-import { User, CreateUserRequest, UpdateUserRequest } from "../types/user";
-import { checkJwt, checkOwnership } from "../middleware/jwt";
-import { requireRole } from "../middleware/roleAuth";
-
+import { checkJwt } from "../middleware/jwt";
+import { requireRole, checkAdmin } from "../middleware/roleAuth";
+import * as userService from "../Services/userService";
 
 const router = express.Router();
 
 // GET /api/users - Get all users
 router.get("/", async (req, res) => {
   try {
-    const users = await sql`SELECT * FROM users ORDER BY created_at DESC`;
-    res.json({ success: true, data: users });
+    const data = await userService.getAllUsers();
+    res.json({ success: true, data: data });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
@@ -19,17 +17,11 @@ router.get("/", async (req, res) => {
 });
 
 // GET /api/users/:id - Get user by ID
-router.get("/:id", async (req, res): Promise<void> => {
+router.get("/userID/:id", async (req, res): Promise<void> => {
   try {
     const { id } = req.params;
-    const users = await sql`SELECT * FROM users WHERE id = ${id}`;
-
-    if (users.length === 0) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    res.json({ success: true, data: users[0] });
+    const data = await userService.getUserById(id);
+    res.json({ success: true, data: data });
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Failed to fetch user" });
@@ -37,19 +29,12 @@ router.get("/:id", async (req, res): Promise<void> => {
 });
 
 //GET /api/users/:username - Get user by user name
-router.get("/:username", async (req, res): Promise<void> => {
+router.get("/username/:username", async (req, res): Promise<void> => {
   try {
     const { username } = req.params;
-    const users = await sql`SELECT * FROM users WHERE username = ${username}`;
-
-    if (users.length === 0) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    res.json({ success: true, data: users[0] });
-  }
-  catch (error) {
+    const data = await userService.getUserByUsername(username);
+    res.json({ success: true, data: data });
+  } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Failed to fetch user" });
   }
@@ -58,7 +43,11 @@ router.get("/:username", async (req, res): Promise<void> => {
 // GET /api/users/search?q=...&limit=...&mode=prefix|contains|fuzzy
 router.get("/search", async (req, res): Promise<void> => {
   try {
-    const { q, limit = "10", mode = "prefix" } = req.query as {
+    const {
+      q,
+      limit = "10",
+      mode = "prefix",
+    } = req.query as {
       q?: string;
       limit?: string;
       mode?: "prefix" | "contains" | "fuzzy";
@@ -80,39 +69,8 @@ router.get("/search", async (req, res): Promise<void> => {
     const searchMode: "prefix" | "contains" | "fuzzy" =
       mode === "contains" || mode === "fuzzy" ? mode : "prefix";
 
-    let users;
-    if (searchMode === "fuzzy") {
-      // requires pg_trgm extension + GIN index on lower(username)
-      users = await sql/*sql*/`
-        SELECT id, username, name, avatar,
-               similarity(lower(username), lower(${term})) AS score
-        FROM users
-        WHERE lower(username) % lower(${term})
-        ORDER BY score DESC, username
-        LIMIT ${safeLimit}
-      `;
-    } else if (searchMode === "contains") {
-      const pattern = `%${term}%`;
-      users = await sql/*sql*/`
-        SELECT id, username, name, avatar
-        FROM users
-        WHERE username ILIKE ${pattern}
-        ORDER BY username
-        LIMIT ${safeLimit}
-      `;
-    } else {
-      // prefix (default)
-      const pattern = `${term}%`;
-      users = await sql/*sql*/`
-        SELECT id, username, name, avatar
-        FROM users
-        WHERE username ILIKE ${pattern}
-        ORDER BY username
-        LIMIT ${safeLimit}
-      `;
-    }
-
-    res.json({ success: true, mode: searchMode, data: users });
+    const result = await userService.searchUsers(term, safeLimit, searchMode);
+    res.json({ success: true, mode: searchMode, data: result });
   } catch (error) {
     console.error("Error searching users:", error);
     res.status(500).json({ error: "Failed to search users" });
@@ -120,28 +78,18 @@ router.get("/search", async (req, res): Promise<void> => {
 });
 
 // POST /api/users - Create new user
-router.post("/", checkJwt, async (req, res): Promise<void> => {
+router.post("/create", checkJwt, async (req, res): Promise<void> => {
   try {
-    const tokenEmail = req.auth?.payload?.['email']; // get email from jwt
+    const tokenEmail = req.auth?.payload?.["email"] as string; // get email from jwt
+    const { username } = req.body;
 
-    // Check if user already exists
-    const existingUser = await sql`SELECT * FROM users WHERE email = ${tokenEmail}`;
-    
-    if (existingUser.length > 0) {
-      res.status(409).json({
-        error: "User already exists with this email",
-      });
+    if (!tokenEmail) {
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
-    // create user
-    const newUser = await sql`
-      INSERT INTO users (email)
-      VALUES (${tokenEmail})
-      RETURNING *
-    `;
-
-    res.status(201).json({ success: true, data: newUser[0] });
+    const newUser = await userService.createUser(tokenEmail, username);
+    res.status(201).json({ success: true, data: newUser });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Failed to create user" });
@@ -149,29 +97,24 @@ router.post("/", checkJwt, async (req, res): Promise<void> => {
 });
 
 // PUT /api/users/:id - Update user
-router.put("/:id", checkJwt, checkOwnership,  async (req, res): Promise<void> => {
+router.put("/update", checkJwt, async (req, res): Promise<void> => {
   try {
-    const { id } = req.params;
-    const userData: UpdateUserRequest = req.body;
+    const tokenEmail = req.auth?.payload?.["email"] as string | undefined;
 
-    const updatedUser = await sql`
-      UPDATE users 
-      SET username = COALESCE(${userData.username}, username),
-          name = COALESCE(${userData.name}, name),
-          email = COALESCE(${userData.email}, email),
-          avatar = COALESCE(${userData.avatar}, avatar),
-          bio = COALESCE(${userData.bio}, bio),
-          gender = COALESCE(${userData.gender}, gender)
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    if (!tokenEmail) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
 
-    if (updatedUser.length === 0) {
+    // Get user ID from email
+    const user = await userService.getUserByEmail(tokenEmail);
+    if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
     }
 
-    res.json({ success: true, data: updatedUser[0] });
+    const updatedUser = await userService.updateUser(user.id, req.body);
+    res.json({ success: true, data: updatedUser });
   } catch (error) {
     console.error("Error updating user:", error);
 
@@ -187,19 +130,26 @@ router.put("/:id", checkJwt, checkOwnership,  async (req, res): Promise<void> =>
 });
 
 // DELETE /api/users/:id - Delete user
-router.delete("/:id", checkJwt, checkOwnership, async (req, res): Promise<void> => {
+router.delete("/delete", checkJwt, checkAdmin, async (req, res): Promise<void> => {
   try {
-    const { id } = req.params;
+    const tokenEmail = req.auth?.payload?.["email"] as string | undefined;
 
-    const deletedUser = await sql`
-      DELETE FROM users WHERE id = ${id} RETURNING *
-    `;
-
-    if (deletedUser.length === 0) {
-      res.status(404).json({ error: "User not found" });
+    if (!tokenEmail) {
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
+    // Get target email: from body if provided, otherwise use authenticated user's email
+    const targetEmail = req.body.email || tokenEmail;
+
+    // Use the isAdmin flag from middleware
+    // If trying to delete someone else, must be admin
+    if (targetEmail !== tokenEmail && !req.isAdmin) {
+      res.status(403).json({ error: "Only admins can delete other users" });
+      return;
+    }
+
+    await userService.deleteUserByEmail(tokenEmail);
     res.json({ success: true, message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
