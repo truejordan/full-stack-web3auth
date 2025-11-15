@@ -1,13 +1,17 @@
 import React, {useState, useEffect} from "react";
 import { Stack } from "expo-router";
 import { useAuth, useAuthInit } from "@/hooks/auth";
+import { useBalance } from "@/hooks/queries/useWeb3Auth";
+import { useWalletStore } from "@/store/walletStore";
 
 const RootStack = () => {
-  useAuthInit();
-
+  const { address, balance } = useWalletStore();
   const { loggedIn, session, isInitialized } = useAuth();
   const [showStorybook, setShowStorybook] = useState(false);
-
+  
+  useAuthInit();
+  useBalance(address, session?.access_token || "");
+  console.log("balance", balance);
   console.log("my session info",session?.access_token) 
   // console.log("my loggedIn",loggedIn)
 

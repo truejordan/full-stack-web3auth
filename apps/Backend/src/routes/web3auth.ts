@@ -83,14 +83,21 @@ router.post("/balance", async (req, res): Promise<void> => {
   }
 });
 
-router.post("/transfer", async (req, res): Promise<void> => {
-  const { recipient, amount, idToken } = req.body;
+router.post("/transfer", checkJwt, async (req, res): Promise<void> => {
+  const { recipient, amount } = req.body;
   if (!recipient || amount <= 0) {
     res.status(400).json({ error: "Invalid recipient or amount" });
     return;
   }
   try {
-    const provider = await connectToWeb3Auth(idToken);
+    const w3Token = await mintW3Jwt(req);
+    console.log("🔐 W3 Token minted:", w3Token);
+
+    if (!w3Token) {
+      res.status(400).json({ error: "Failed to mint W3 JWT" });
+      return;
+    }
+    const provider = await connectToWeb3Auth(w3Token);
     const keyPair = await getKeyPair(provider, getSuiKeyPair);
     const transaction = await sendTransaction(recipient, amount, keyPair);
     res.json({ success: true, transaction: transaction });

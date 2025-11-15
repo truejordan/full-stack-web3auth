@@ -37,11 +37,12 @@ export const web3AuthApi = {
     return handleApiResponse<ConnectResponse>(response, "Failed to connect to Web3Auth");
   },
 
-  getBalance: async (address: string): Promise<BalanceResponse> => {
+  getBalance: async (address: string, idToken: string): Promise<BalanceResponse> => {
     const response = await fetch(`${API_BASE_URL}/web3auth/balance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`,
       },
       body: JSON.stringify({ address }),
     });
@@ -57,6 +58,7 @@ export const web3AuthApi = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`,
       },
       body: JSON.stringify({ recipient, amount, idToken }),
     });

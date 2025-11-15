@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { web3AuthApi } from "@/lib/tanstack/web3auth";
 import { Alert } from "react-native";
@@ -34,14 +35,25 @@ export const useConnectWeb3Auth = () => {
  * Get wallet balance (query - reads data)
  * Automatically refetches when address changes
  */
-export const useBalance = (address: string | undefined) => {
-  return useQuery({
-    queryKey: ["balance", address],
-    queryFn: () => web3AuthApi.getBalance(address!),
-    enabled: !!address, // Only run if address exists
-    staleTime: 30 * 1000, // Consider fresh for 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute
+export const useBalance = (address: string | undefined, idToken: string) => {
+  const { setBalance } = useWalletStore();
+  const {data, error}= useQuery({
+    queryKey: ["balance", address, idToken],
+    queryFn: () => web3AuthApi.getBalance(address!, idToken),
+    enabled: !!address && !!idToken, // Only run if address exists
+    staleTime: 5 * 1000, // Consider fresh for 5 seconds
+    refetchInterval: 5 * 1000, // Refetch every 5 seconds
   });
+
+  if (error) {
+    console.log("Error getting balance:", error.message);
+  }
+
+  useEffect(() => {
+    if (data) {
+      setBalance(data.balance);
+    }
+  }, [data, setBalance]);
 };
 
 /**
@@ -66,10 +78,10 @@ export const useTransfer = () => {
       if (address) {
         queryClient.invalidateQueries({ queryKey: ["balance", address] });
       }
-      Alert.alert("Success", "Transaction sent successfully");
+      console.log("Success", "Transaction sent successfully");
     },
     onError: (error: Error) => {
-      Alert.alert("Transfer Error", error.message);
+      console.log("Transfer Error", error.message);
     },
   });
 };
