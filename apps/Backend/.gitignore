@@ -1,1 +1,5 @@
+#  ignore
 .env
+
+# Explicitly *not* ignore
+!.env.example
